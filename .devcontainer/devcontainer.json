@@ -1,0 +1,22 @@
+{
+  "name": "OpenShorts (Codespaces)",
+  // The default Codespaces image already ships Docker and Docker Compose, and
+  // GitHub does not count it against the Codespaces storage quota.
+  "image": "mcr.microsoft.com/devcontainers/universal:2",
+  "hostRequirements": {
+    "cpus": 4,
+    "memory": "16gb",
+    "storage": "32gb"
+  },
+  "forwardPorts": [8080],
+  "portsAttributes": {
+    "8080": {
+      "label": "OpenShorts",
+      "onAutoForward": "notify"
+    }
+  },
+  "otherPortsAttributes": {
+    "onAutoForward": "ignore"
+  },
+  "postStartCommand": "bash deploy/codespaces/start.sh"
+}
