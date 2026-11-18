@@ -58,12 +58,38 @@ if [ "$built" = "1" ]; then
   docker image prune -f >/dev/null || true
 fi
 
+# Some Docker-in-Docker hosts drop forwarded traffic between containers on a
+# compose network (FORWARD policy DROP with only docker0 accepted). Allow
+# bridge-to-bridge forwarding only; nothing new is reachable from outside.
+allow_bridge_forwarding() {
+  local ipt fixed=0
+  for ipt in iptables-legacy iptables-nft iptables; do
+    command -v "$ipt" >/dev/null 2>&1 || continue
+    sudo -n "$ipt" -S FORWARD >/dev/null 2>&1 || continue
+    if ! sudo -n "$ipt" -C FORWARD -i br-+ -o br-+ -j ACCEPT 2>/dev/null; then
+      sudo -n "$ipt" -I FORWARD -i br-+ -o br-+ -j ACCEPT 2>/dev/null && fixed=1
+    fi
+  done
+  [ "$fixed" = "1" ] && echo "==> Allowed traffic between the app containers (Docker network fix)"
+  return 0
+}
+
+backend_alone_ok() {
+  docker exec openshorts-backend curl -sf http://127.0.0.1:8000/health/ready >/dev/null 2>&1 \
+    && ! docker exec openshorts-frontend wget -qO- -T 3 http://backend:8000/health/ready >/dev/null 2>&1
+}
+
 echo "==> Waiting for the backend to answer through nginx"
 ready=0
-for _ in $(seq 1 90); do
-  if curl -sf "http://127.0.0.1:${PORT}/health/ready" >/dev/null 2>&1; then
+net_checked=0
+for i in $(seq 1 90); do
+  if curl -sf -m 5 "http://127.0.0.1:${PORT}/health/ready" >/dev/null 2>&1; then
     ready=1
     break
+  fi
+  if [ "$net_checked" = "0" ] && [ "$i" -ge 5 ] && backend_alone_ok; then
+    net_checked=1
+    allow_bridge_forwarding
   fi
   sleep 2
 done

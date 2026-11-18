@@ -60,7 +60,7 @@ title, ready to preview and save to Files or Photos.
 bash deploy/codespaces/start.sh
 ```
 
-5. Wait for the line "OpenShorts is running at" followed by your private URL.
+5. Wait for the line "OpenShorts is running" followed by your private URL.
 
 ## Open OpenShorts on iPad or iPhone
 
@@ -194,5 +194,13 @@ bash deploy/codespaces/start.sh --rebuild
 7. A large upload fails or stalls: try a shorter or smaller file (trim it in
    Photos first). Very large uploads through the Codespaces port forwarder
    have not been tested.
-8. The dashboard here is the production build served by nginx, not the Vite
+8. The start log says "could not confirm the port visibility automatically":
+   this is normal inside a codespace. Check the Ports tab: port 8080 must show
+   Private (it is private unless someone changed it).
+9. The start log says "Allowed traffic between the app containers (Docker
+   network fix)": normal on some machines; `start.sh` fixed the Docker network
+   so the dashboard can reach the backend. Nothing to do.
+10. The startup did not run after a restart (the page does not load): open a
+   terminal and run `bash deploy/codespaces/start.sh`.
+11. The dashboard here is the production build served by nginx, not the Vite
    dev server, so the Vite "host not allowed" error does not apply.

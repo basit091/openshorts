@@ -28,12 +28,12 @@ echo "==> Containers"
 
 echo
 echo "==> Health"
-if curl -sf "http://127.0.0.1:${PORT}/health/ready" >/dev/null 2>&1; then
+if curl -sf -m 5 "http://127.0.0.1:${PORT}/health/ready" >/dev/null 2>&1; then
   echo "backend via nginx: ready"
 else
   echo "backend via nginx: NOT ready (run: bash deploy/codespaces/start.sh)"
 fi
-if curl -sf "http://127.0.0.1:${PORT}/" -o /dev/null 2>&1; then
+if curl -sf -m 5 "http://127.0.0.1:${PORT}/" -o /dev/null 2>&1; then
   echo "dashboard: serving"
 else
   echo "dashboard: NOT serving"
