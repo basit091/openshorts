@@ -135,7 +135,11 @@ renders style edits in the browser). To include it:
 WITH_RENDERER=1 bash deploy/codespaces/start.sh --rebuild
 ```
 
-It adds a Chromium-based image of several GB, so it uses more storage quota.
+It adds an image of about 3 GB, so it uses more storage quota. Known issue:
+the renderer image currently builds but exits at startup with "export
+'Interactive' was not found in 'remotion'" (its Remotion packages are pinned
+only to `^4.0.0` and resolve to mismatched versions). Nothing in the dashboard
+or the clip pipeline needs it, so leave it off unless that is fixed.
 
 ## Quotas and costs
 
@@ -144,7 +148,9 @@ It adds a Chromium-based image of several GB, so it uses more storage quota.
    codespaces use no compute.
 2. Storage: the codespace disk (built images, AI models, clips) counts
    against the 15 GB-month storage quota for as long as the codespace
-   exists, even when stopped. Run `status.sh clean` after rebuilds, download
+   exists, even when stopped. Expect roughly 7 GB for the built images and
+   models plus your clips (up to 8 GB of clips and 4 GB of uploads before the
+   caps prune old files). Run `status.sh clean` after rebuilds, download
    and delete clips you no longer need, and delete codespaces you do not use.
    Do not enable prebuilds: they use extra storage.
 3. Gemini: the free tier of the default model has per-minute and per-day
